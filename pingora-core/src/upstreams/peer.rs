@@ -551,6 +551,15 @@ pub struct PeerOptions {
     pub second_keyshare: bool,
     /// whether to enable TCP fast open
     pub tcp_fast_open: bool,
+    /// Whether to resume TLS sessions with this peer, which is default off.
+    ///
+    /// The connector keeps the latest session the server issued (a TLS 1.2 session or a TLS 1.3
+    /// ticket) and offers it on the next connection to a peer with the same [`Peer::reuse_hash`]
+    /// and ALPN, which saves a full handshake when the server accepts it. As with connections
+    /// from the pool, peers whose reuse hashes match share them, and like any TLS client the
+    /// connector does not verify the server's certificate again on a resumed connection.
+    /// Only BoringSSL and OpenSSL connections read it; other TLS backends ignore it.
+    pub tls_session_reuse: bool,
     /// use Arc because Clone is required but not allowed in trait object
     pub tracer: Option<Tracer>,
     /// A custom L4 connector to use to establish new L4 connections
@@ -605,6 +614,7 @@ impl PeerOptions {
             curves: None,
             second_keyshare: true, // default true and noop when not using PQ curves
             tcp_fast_open: false,
+            tls_session_reuse: false,
             tracer: None,
             custom_l4: None,
             upstream_tcp_sock_tweak_hook: None,
